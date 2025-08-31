@@ -1,5 +1,8 @@
 # Magic 8 Ball
 
+[![Build and Test](https://github.com/marcusholmgren/magic_eight_ball/actions/workflows/ci.yml/badge.svg)](https://github.com/marcusholmgren/magic_eight_ball/actions/workflows/ci.yml)
+[![Deploy to GitHub Pages](https://github.com/marcusholmgren/magic_eight_ball/actions/workflows/deploy.yml/badge.svg)](https://github.com/marcusholmgren/magic_eight_ball/actions/workflows/deploy.yml)
+
 The Magic 8 Ball is a classic fortune-telling toy that provides answers to yes-or-no questions. Ask your question, shake (or tap) the ball, and receive a mysterious, sometimes humorous, answer!
 
 ---
@@ -36,4 +39,3 @@ npm run dev
 ```bash
 npm run build
 ```
-
