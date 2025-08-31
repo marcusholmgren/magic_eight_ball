@@ -7,7 +7,6 @@
   let answer = "";
   const imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCpAyL9LlB39CCfquvZSBM3YZN3HOsaSHBZ2uAZPenq31sPyTncvgV_5HsBQvv_FOFY5iB3npzC3XFnay0Op8h-zkNP783tJl4WWvgwyf6B4CfjAZx-3IW5_-EyWmHHdnaLA218WEMSI8_RO4oHBoJI5dz1wcpmSG1_CKzFHucDNb8A5yGDSVEun8dn5XYBQt_3oY0G4_vvCqlpmCB4SGDFdfZYFc_XC3a2IIzsPTK07z0rw49wZRyo1_r_9fdB9oVW5VwD-OnOG28";
 
-  let showSettings = false;
 
   const answers = [
     "The answer is unclear",
@@ -82,11 +81,9 @@
     }
 
     window.addEventListener('shake', getAnswer);
-    window.addEventListener('close-settings', () => showSettings = false);
 
     return () => {
       window.removeEventListener('shake', getAnswer);
-      window.removeEventListener('close-settings', () => showSettings = false);
     }
   });
 
@@ -101,23 +98,16 @@
   }
 </script>
 
-<div class="flex min-h-screen w-full items-center justify-center bg-[#141122]">
+<main class="flex min-h-screen w-full items-center justify-center bg-[#141122]">
   <div class="w-full h-full max-w-lg max-h-[90vh] bg-[#141122] rounded-xl shadow-lg flex flex-col justify-between group/design-root overflow-x-hidden relative">
     <div class="flex items-center bg-[#141122] p-4 pb-2 justify-between">
       <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pl-12">
         Magic 8 Ball
       </h2>
-      <button on:click={() => showSettings = true} class="text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      </button>
+     <Settings />
     </div>
 
-    {#if showSettings}
-      <Settings />
-    {/if}
+
 
     <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
         <label class="relative flex flex-col min-w-40 flex-1">
@@ -180,4 +170,4 @@
       Tap the ball or shake your phone for an answer.
     </p>
   </div>
-</div>
+</main>
