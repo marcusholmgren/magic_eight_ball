@@ -1,0 +1,62 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: magic-8-ball
+
+      - name: Build application for GitHub Pages
+        env:
+          # This will be used to set the base path in vite.config.ts
+          # The value is the repository name, which is needed for GitHub Pages
+          BASE_URL: /${{ github.event.repository.name }}/
+        run: npm run build
+        working-directory: magic-8-ball
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: magic-8-ball/dist
+
+  deploy-to-pages:
+    runs-on: ubuntu-latest
+    needs: build-and-test # This job depends on the build-and-test job
+    permissions:
+      pages: write # GITHUB_TOKEN needs permission to write to gh-pages
+      id-token: write # GITHUB_TOKEN needs permission to create an OIDC token
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # URL to the deployed page
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: dist
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
