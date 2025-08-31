@@ -24,6 +24,10 @@
   let lastShakeTime = 0;
   const shakeCooldown = 2000; // 2 seconds
 
+  // Speech to Text
+  let isListening = false;
+  let recognition: SpeechRecognition | null = null;
+
   function getAnswer() {
     if (!question) {
       alert("Please ask a question first!");
@@ -71,23 +75,93 @@
       lastY = y!;
       lastZ = z!;
     });
+
+    // Speech Recognition setup
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          question = (question ? question + ' ' : '') + finalTranscript.trim();
+        }
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+      };
+
+      recognition.onerror = () => {
+        isListening = false;
+      };
+    }
   });
+
+  function toggleListen() {
+    if (!recognition) return;
+    if (isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+    isListening = !isListening;
+  }
 </script>
 
-<div class="relative flex size-full min-h-screen flex-col bg-[#141122] dark justify-between group/design-root overflow-x-hidden">
-    <div>
+<div class="flex min-h-screen w-full items-center justify-center bg-[#141122]">
+  <div class="w-full h-full max-w-lg max-h-[90vh] bg-[#141122] rounded-xl shadow-lg flex flex-col justify-between group/design-root overflow-x-hidden">
         <div class="flex items-center bg-[#141122] p-4 pb-2 justify-between">
             <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pl-12 pr-12">
                 Magic 8 Ball
             </h2>
         </div>
         <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-            <label class="flex flex-col min-w-40 flex-1">
-                <input
-                    placeholder="Ask a question"
-                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2a2447] focus:border-none h-14 placeholder:text-[#9c93c8] p-4 text-base font-normal leading-normal"
-                    bind:value={question}
-                />
+            <label class="relative flex flex-col min-w-40 flex-1">
+              <input
+                placeholder="Ask a question"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#2a2447] focus:border-none h-14 placeholder:text-[#9c93c8] p-4 text-base font-normal leading-normal pr-20"
+                bind:value={question}
+                on:input={() => { answer = ""; }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter') getAnswer();
+                  else answer = "";
+                }}
+                autocomplete="off"
+              />
+              {#if question}
+                <button
+                  type="button"
+                  class="absolute right-12 top-1/2 -translate-y-1/2 text-[#9c93c8] hover:text-white text-xl focus:outline-none"
+                  on:click={() => { question = ""; answer = ""; }}
+                  aria-label="Clear"
+                  tabindex="-1"
+                >×</button>
+              {/if}
+              {#if recognition}
+                <button
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-[#2a2447] hover:bg-[#3a3360] border border-[#3a3360] focus:outline-none transition-colors duration-150 {isListening ? 'bg-red-200 border-red-500' : ''}"
+                  on:click={toggleListen}
+                  aria-label="Speak your question"
+                  tabindex="-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 {isListening ? 'text-red-600' : 'text-[#9c93c8]'}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                  </svg>
+                </button>
+              {/if}
             </label>
         </div>
         <div class="flex w-full grow bg-[#141122] @container p-4">
