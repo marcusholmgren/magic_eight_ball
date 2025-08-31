@@ -12,6 +12,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.1.1",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/dom-speech-recognition": "^0.0.6",
     "@types/node": "^24.3.0",
     "autoprefixer": "^10.4.21",
     "svelte": "^5.38.1",

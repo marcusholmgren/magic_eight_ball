@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { textToSpeech } from './lib/stores';
+  import { textToSpeech, selectedVoice } from './lib/stores';
   import Settings from './lib/Settings.svelte';
 
   let question = "";
@@ -46,7 +46,11 @@
 
     if ($textToSpeech) {
       const utterance = new SpeechSynthesisUtterance(answer);
-      utterance.lang = 'en-US';
+      const voices = speechSynthesis.getVoices();
+      const voice = voices.find(v => v.voiceURI === $selectedVoice);
+      if (voice) {
+        utterance.voice = voice;
+      }
       speechSynthesis.speak(utterance);
     }
   }
