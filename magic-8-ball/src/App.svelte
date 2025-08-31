@@ -46,6 +46,7 @@
 
     if ($textToSpeech) {
       const utterance = new SpeechSynthesisUtterance(answer);
+      utterance.lang = 'en-US';
       speechSynthesis.speak(utterance);
     }
   }
