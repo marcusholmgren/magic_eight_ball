@@ -3,6 +3,8 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/magic_8_ball/",
+  // Read the base path from an environment variable, defaulting to '/'
+  // for local development.
+  base: process.env.BASE_URL || "/",
   plugins: [svelte()],
 });
