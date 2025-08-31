@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { textToSpeech } from './lib/stores';
+  import Settings from './lib/Settings.svelte';
 
   let question = "";
   let answer = "";
   const imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCpAyL9LlB39CCfquvZSBM3YZN3HOsaSHBZ2uAZPenq31sPyTncvgV_5HsBQvv_FOFY5iB3npzC3XFnay0Op8h-zkNP783tJl4WWvgwyf6B4CfjAZx-3IW5_-EyWmHHdnaLA218WEMSI8_RO4oHBoJI5dz1wcpmSG1_CKzFHucDNb8A5yGDSVEun8dn5XYBQt_3oY0G4_vvCqlpmCB4SGDFdfZYFc_XC3a2IIzsPTK07z0rw49wZRyo1_r_9fdB9oVW5VwD-OnOG28";
 
-  // State to track if motion permission is needed/granted
-  let needsMotionPermission = false;
-  let motionPermissionGranted = false;
 
   const answers = [
     "The answer is unclear",
@@ -44,65 +43,11 @@
     lastShakeTime = now;
     const randomIndex = Math.floor(Math.random() * answers.length);
     answer = answers[randomIndex];
-  }
 
-  function setupShakeDetection() {
-    let lastX: number, lastY: number, lastZ: number;
-    let moveCounter = 0;
-    const shakeThreshold = 15;
-
-    window.addEventListener('devicemotion', (event) => {
-      const { x, y, z } = event.accelerationIncludingGravity!;
-      if (lastX === undefined) {
-        lastX = x!;
-        lastY = y!;
-        lastZ = z!;
-        return;
-      }
-
-      const deltaX = Math.abs(x! - lastX);
-      const deltaY = Math.abs(y! - lastY);
-      const deltaZ = Math.abs(z! - lastZ);
-
-      if (deltaX + deltaY + deltaZ > shakeThreshold) {
-        moveCounter++;
-      } else {
-        moveCounter = 0;
-      }
-
-      if (moveCounter > 2) {
-        getAnswer();
-        moveCounter = 0;
-      }
-
-      lastX = x!;
-      lastY = y!;
-      lastZ = z!;
-    });
-  }
-
-  async function requestMotionPermission() {
-    // Check if the permission API exists
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      try {
-        const permissionState = await (DeviceMotionEvent as any).requestPermission();
-        if (permissionState === 'granted') {
-          // Permission granted, now we can set up the listener
-          setupShakeDetection();
-          motionPermissionGranted = true;
-        } else {
-          // Permission denied by the user
-          alert('Shake detection will not work without motion sensor permission.');
-        }
-      } catch (error) {
-        console.error('Error requesting device motion permission:', error);
-      }
-    } else {
-      // For non-iOS 13+ browsers, the API doesn't exist, so we can just set up the listener
-      setupShakeDetection();
-      motionPermissionGranted = true;
+    if ($textToSpeech) {
+      const utterance = new SpeechSynthesisUtterance(answer);
+      speechSynthesis.speak(utterance);
     }
-    needsMotionPermission = false;
   }
 
   onMount(() => {
@@ -135,12 +80,10 @@
       };
     }
 
-    // Check if we are on a device that requires permission for motion events
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      needsMotionPermission = true;
-    } else {
-      // If no permission is needed (e.g., Android), set it up directly
-      setupShakeDetection();
+    window.addEventListener('shake', getAnswer);
+
+    return () => {
+      window.removeEventListener('shake', getAnswer);
     }
   });
 
@@ -155,21 +98,16 @@
   }
 </script>
 
-<div class="flex min-h-screen w-full items-center justify-center bg-[#141122]">
-  <div class="w-full h-full max-w-lg max-h-[90vh] bg-[#141122] rounded-xl shadow-lg flex flex-col justify-between group/design-root overflow-x-hidden">
+<main class="flex min-h-screen w-full items-center justify-center bg-[#141122]">
+  <div class="w-full h-full max-w-lg max-h-[90vh] bg-[#141122] rounded-xl shadow-lg flex flex-col justify-between group/design-root overflow-x-hidden relative">
     <div class="flex items-center bg-[#141122] p-4 pb-2 justify-between">
-      <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pl-12 pr-12">
+      <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pl-12">
         Magic 8 Ball
       </h2>
+     <Settings />
     </div>
 
-    {#if needsMotionPermission && !motionPermissionGranted}
-      <div class="px-4 py-2 text-center">
-        <button on:click={requestMotionPermission} class="text-white bg-[#2a2447] hover:bg-[#3a3360] px-4 py-2 rounded-lg">
-          Enable Shake Detection
-        </button>
-      </div>
-    {/if}
+
 
     <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
         <label class="relative flex flex-col min-w-40 flex-1">
@@ -232,4 +170,4 @@
       Tap the ball or shake your phone for an answer.
     </p>
   </div>
-</div>
+</main>
