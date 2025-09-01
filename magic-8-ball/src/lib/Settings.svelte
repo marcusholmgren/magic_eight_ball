@@ -80,8 +80,13 @@
     });
 
     function populateVoiceList() {
-      voices = speechSynthesis.getVoices();
+        voices = speechSynthesis.getVoices().filter(v => v.lang === 'en-US');
+        if (voices.length > 0 && !$selectedVoice) {
+            const lastVoice = voices.at(-1);
+            selectedVoice.set(lastVoice.voiceURI);
+        }
     }
+
 
     populateVoiceList();
     if (speechSynthesis.onvoiceschanged !== undefined) {
@@ -101,6 +106,7 @@
 
   function handleVoiceChange(event: Event) {
     const target = event.target as HTMLSelectElement;
+    console.log('selected voice:', target.value);
     selectedVoice.set(target.value);
   }
 </script>
@@ -131,7 +137,6 @@
             <input type="checkbox" name="setting" aria-label="Enable Text-to-Speech" class="absolute inset-0 appearance-none focus:outline-hidden" on:change={handleTextToSpeechChange} checked={$textToSpeech} />
           </div>
         </div>
-        {#if $textToSpeech}
         <div>
           <label for="voice-select" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Choose a voice</label>
           <div class="mt-2 grid grid-cols-1">
@@ -151,7 +156,6 @@
             </svg>
           </div>
         </div>
-        {/if}
       </div>
     </div>
   </el-popover>
